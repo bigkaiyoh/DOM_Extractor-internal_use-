@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
-import pyperclip
 
 # Function to fetch and process the DOM from a URL
 def fetch_url_content(urls):
@@ -62,14 +61,14 @@ def format_for_chatgpt(results):
 # Streamlit App
 def main():
     st.title("Nuginy Internal Webpage DOM Scraper")
-    st.write("Input URLs to fetch their DOM and prepare it for ChatGPT.")
+    st.write("URLを入力して、DOMを取得し、ChatGPTで利用できるようにフォーマットします。")
 
     # Input section
     if "formatted_output" not in st.session_state:
         st.session_state["formatted_output"] = ""
 
-    urls_input = st.text_area("Enter URLs (one per line):")
-    fetch_button = st.button("Fetch and Format")
+    urls_input = st.text_area("URLを入力してください（1行につき1つのURLを入力）:")
+    fetch_button = st.button("取得してフォーマット")
 
     if fetch_button:
         urls = [url.strip() for url in urls_input.split("\n") if url.strip()]
@@ -78,20 +77,10 @@ def main():
             st.session_state["formatted_output"] = format_for_chatgpt(results)
 
             # Display output
-            st.subheader("Formatted Output")
-            st.text_area("Copy this text to paste into ChatGPT:", st.session_state["formatted_output"], height=300)
+            st.subheader("フォーマット済みの出力")
+            st.text_area("このテキストをコピーしてChatGPTに貼り付けてください:", st.session_state["formatted_output"], height=300)
         else:
-            st.error("Please enter at least one valid URL.")
-
-    # Copy-to-clipboard button
-    if st.session_state["formatted_output"]:
-        copy_button = st.button("Copy to Clipboard")
-        if copy_button:
-            try:
-                pyperclip.copy(st.session_state["formatted_output"])
-                st.success("Output copied to clipboard!")
-            except Exception as e:
-                st.error(f"Failed to copy to clipboard: {e}")
+            st.error("少なくとも1つの有効なURLを入力してください。")
 
 if __name__ == "__main__":
     main()
