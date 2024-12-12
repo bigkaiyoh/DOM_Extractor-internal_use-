@@ -7,6 +7,7 @@ import json
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from webdriver_manager.chrome import ChromeDriverManager
 
 # Selenium Setup
 def init_selenium():
@@ -14,8 +15,7 @@ def init_selenium():
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
-    service = Service("path_to_chromedriver")  # Update with your chromedriver path
-    driver = webdriver.Chrome(service=service, options=options)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     return driver
 
 # Extract Content Dynamically with Selenium
@@ -93,13 +93,14 @@ def fetch_url_content(urls, dynamic=False):
 # Streamlit App
 def main():
     st.title("Dynamic Web Scraper")
-    st.write("Input URLs to extract structured and unstructured data from webpages.")
+    st.write("URLを入力して、ウェブページから構造化データと非構造化データを抽出します。")
 
     # Input Section
-    urls_input = st.text_area("Enter URLs (one per line):", height=150)
-    dynamic_loading = st.checkbox("Enable dynamic content loading (Selenium)", value=False)
-    output_format = st.radio("Select output format:", options=["JSON", "Plain Text"], index=0)
-    fetch_button = st.button("Fetch and Extract")
+    urls_input = st.text_area("URLを入力してください（1行につき1つのURL）:", height=150)
+    st.write("**動的コンテンツ読み込みについて:** 動的コンテンツ読み込みを有効にすると、JavaScriptで生成されたページ内容も取得できます。例えば、商品のリストや動的に生成される情報が必要な場合にオンにしてください。ただし、処理速度が遅くなる可能性があります。")
+    dynamic_loading = st.checkbox("動的コンテンツ読み込みを有効にする (Selenium)", value=False)
+    output_format = st.radio("出力形式を選択してください:", options=["JSON", "プレーンテキスト"], index=0)
+    fetch_button = st.button("データを取得・抽出")
 
     if fetch_button:
         urls = [url.strip() for url in urls_input.split("\n") if url.strip()]
@@ -110,17 +111,17 @@ def main():
             if output_format == "JSON":
                 formatted_results = json.dumps(results, indent=4, ensure_ascii=False)
             else:
-                formatted_results = "\n\n".join([f"URL: {res['url']}\nStatus: {res['status']}\nTitle: {res.get('title', 'No title')}\nDescription: {res.get('description', 'No description')}\n"
+                formatted_results = "\n\n".join([f"URL: {res['url']}\nステータス: {res['status']}\nタイトル: {res.get('title', 'No title')}\n説明: {res.get('description', 'No description')}\n"
                                                  for res in results])
 
             # Display Results
-            st.subheader("Extraction Results")
-            st.text_area("Output:", formatted_results, height=400)
+            st.subheader("抽出結果")
+            st.text_area("出力:", formatted_results, height=400)
 
             # Optional Copy Button
-            st.write("Copy the above results to use in your workflow.")
+            st.write("上記の結果をコピーしてワークフローで使用してください。")
         else:
-            st.error("Please enter at least one valid URL.")
+            st.error("少なくとも1つの有効なURLを入力してください。")
 
 if __name__ == "__main__":
     main()

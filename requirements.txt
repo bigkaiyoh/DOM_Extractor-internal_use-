@@ -4,3 +4,4 @@ beautifulsoup4
 pyperclip
 pandas
 selenium
+webdriver-manager
