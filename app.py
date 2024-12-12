@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+import json
 
 # Function to fetch and process the DOM from a URL
 def fetch_url_content(urls):
@@ -19,6 +20,7 @@ def fetch_url_content(urls):
             h1_tags = [h1.text.strip() for h1 in soup.find_all('h1')]
             h2_tags = [h2.text.strip() for h2 in soup.find_all('h2')]
             paragraphs = [p.text.strip() for p in soup.find_all('p')]
+            links = [a['href'] for a in soup.find_all('a', href=True) if a['href'].startswith('http')]
 
             results.append({
                 'url': url,
@@ -27,7 +29,8 @@ def fetch_url_content(urls):
                 'description': description,
                 'h1_tags': h1_tags,
                 'h2_tags': h2_tags,
-                'paragraphs': paragraphs
+                'paragraphs': paragraphs,
+                'links': links
             })
         except requests.exceptions.RequestException as e:
             results.append({
@@ -37,31 +40,14 @@ def fetch_url_content(urls):
             })
     return results
 
-# Function to format the output for ChatGPT
+# Function to format the output as JSON for ChatGPT
 def format_for_chatgpt(results):
-    output = "# Webpage Scraping Results\n\n"
-    for result in results:
-        if result['status'] == 'Success':
-            output += f"## URL: {result['url']}\n"
-            output += f"### Status: Success\n"
-            output += f"### Title: {result['title']}\n"
-            output += f"### Description: {result['description']}\n"
-            output += f"### H1 Tags: {', '.join(result['h1_tags'])}\n"
-            output += f"### H2 Tags: {', '.join(result['h2_tags'])}\n"
-            output += "### Key Paragraphs:\n"
-            for paragraph in result['paragraphs']:
-                output += f"- {paragraph}\n"
-        else:
-            output += f"## URL: {result['url']}\n"
-            output += f"### Status: Failed\n"
-            output += f"Error: {result['error']}\n"
-        output += "\n"
-    return output
+    return json.dumps(results, indent=4, ensure_ascii=False)
 
 # Streamlit App
 def main():
     st.title("Nuginy Internal Webpage DOM Scraper")
-    st.write("URLを入力して、DOMを取得し、ChatGPTで利用できるようにフォーマットします。")
+    st.write("URLを入力して、DOMを取得し、ChatGPTで利用できるJSON形式にフォーマットします。")
 
     # Input section
     if "formatted_output" not in st.session_state:
@@ -77,8 +63,8 @@ def main():
             st.session_state["formatted_output"] = format_for_chatgpt(results)
 
             # Display output
-            st.subheader("フォーマット済みの出力")
-            st.text_area("このテキストをコピーしてChatGPTに貼り付けてください:", st.session_state["formatted_output"], height=300)
+            st.subheader("フォーマット済みのJSON出力")
+            st.text_area("このJSONをコピーしてChatGPTに貼り付けてください:", st.session_state["formatted_output"], height=500)
         else:
             st.error("少なくとも1つの有効なURLを入力してください。")
 
