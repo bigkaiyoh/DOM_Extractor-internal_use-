@@ -92,7 +92,7 @@ def fetch_url_content(urls, dynamic=False):
 
 # Streamlit App
 def main():
-    st.title("Dynamic Web Scraper")
+    st.title("Nuginy WebDOM Scraper")
     st.write("URLを入力して、ウェブページから構造化データと非構造化データを抽出します。")
 
     # Input Section
